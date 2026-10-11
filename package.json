@@ -9,7 +9,7 @@
 		"lint": "eslint",
 		"db:generate": "drizzle-kit generate --config=./drizzle.config.ts",
 		"db:migrate": "drizzle-kit migrate --config=./drizzle.config.ts",
-		"db:seed": "tsx --env-file=.env.local src/db/seed.ts"
+		"db:seed": "tsx --env-file=.env src/db/seed.ts"
 	},
 	"dependencies": {
 		"@hugeicons/core-free-icons": "^4.3.5",
