@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 		const [checkUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
 		if (!checkUser) {
-			throw new ApiError(404, 'User not found');
+			throw new ApiError(401, 'Invalid credentials');
 		}
 
 		const passwordCheck = await comparePassword(password, checkUser.password_hash);
