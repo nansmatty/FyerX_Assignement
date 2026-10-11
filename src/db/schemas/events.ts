@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, text, timestamp, numeric, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, numeric, boolean, index, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { categories } from './categories';
 import { users } from './users';
 
@@ -30,5 +31,7 @@ export const events = pgTable(
 		index('idx_events_category_id').on(table.categoryId),
 		index('idx_events_city').on(table.city),
 		index('idx_events_event_date').on(table.eventDate),
+
+		check('events_price_nonnegative', sql`${table.price} >= 0`),
 	],
 );
