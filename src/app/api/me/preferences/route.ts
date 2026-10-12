@@ -25,5 +25,25 @@ export async function PUT(req: NextRequest) {
 
 		const body = await req.json();
 		const { categoryIds } = userFavouritesSchema.parse(body);
+
+		const uniqueCategoryIds = [...new Set(categoryIds)];
+
+		return db.transaction(async (tx) => {
+			await tx.delete(userFavourites).where(eq(userFavourites.userId, loggedUser.userId));
+
+			if (uniqueCategoryIds.length === 0) {
+				return [];
+			}
+
+			return tx
+				.insert(userFavourites)
+				.values(
+					uniqueCategoryIds.map((categoryId) => ({
+						userId: loggedUser.userId,
+						categoryId,
+					})),
+				)
+				.returning();
+		});
 	});
 }
