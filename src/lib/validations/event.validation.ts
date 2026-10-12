@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const eventIdValidation = z.uuid();
+
 export const createEventValidation = z.object({
 	title: z.string().trim().min(1).max(255),
 
@@ -27,3 +29,9 @@ export const createEventValidation = z.object({
 });
 
 export type CreateEventValidation = z.infer<typeof createEventValidation>;
+
+export const updateEventValidation = createEventValidation.partial().refine((data) => Object.keys(data).length > 0, {
+	message: 'At least one field must be provided for update',
+});
+
+export type UpdateEventValidation = z.infer<typeof updateEventValidation>;
