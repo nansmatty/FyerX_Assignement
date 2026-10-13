@@ -1,4 +1,5 @@
 import CategoryPreferences from '@/components/preferences/category-preferences';
+import MyReminders from '@/components/preferences/my-reminders';
 
 export default function PreferencesPage() {
 	return (
@@ -6,6 +7,7 @@ export default function PreferencesPage() {
 			<h1 className='mb-6 text-3xl font-bold'>Preferences & Reminders</h1>
 
 			<CategoryPreferences />
+			<MyReminders />
 		</main>
 	);
 }
