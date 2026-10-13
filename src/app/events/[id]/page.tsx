@@ -70,7 +70,7 @@ export default function EventPage() {
 	return (
 		<main className='min-h-screen bg-slate-50 px-5 py-10'>
 			<div className='mx-auto max-w-5xl'>
-				<Link href='/events' className='mb-6 inline-block text-sm font-medium text-indigo-600 hover:underline'>
+				<Link href='/' className='mb-6 inline-block text-sm font-medium text-indigo-600 hover:underline'>
 					← Back to events
 				</Link>
 

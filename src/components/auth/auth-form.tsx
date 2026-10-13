@@ -43,6 +43,7 @@ const AuthForm = () => {
 				setForm((prev) => ({
 					...prev,
 					name: '',
+					email: '',
 					password: '',
 				}));
 
@@ -50,7 +51,7 @@ const AuthForm = () => {
 				return;
 			}
 
-			router.push('/events');
+			router.push('/');
 			router.refresh();
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Something went wrong');
