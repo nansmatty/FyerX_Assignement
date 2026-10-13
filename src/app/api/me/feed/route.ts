@@ -1,8 +1,8 @@
 import { db } from '@/db';
-import { events, userFavourites } from '@/db/schemas';
+import { eventCardDesigns, events, userFavourites } from '@/db/schemas';
 import { apiHandler } from '@/lib/api-handler';
 import { verifyToken } from '@/lib/utils/verifyToken';
-import { and, eq, gte, inArray } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -18,10 +18,26 @@ export async function GET(req: NextRequest) {
 		}
 
 		const favouriteEvents = await db
-			.select()
+			.select({
+				event: events,
+				cardDesign: {
+					background: eventCardDesigns.background,
+					stickers: eventCardDesigns.stickers,
+				},
+			})
 			.from(events)
-			.where(and(inArray(events.categoryId, categoryIds), eq(events.isActive, true), gte(events.eventDate, new Date())));
+			.leftJoin(eventCardDesigns, and(eq(events.id, eventCardDesigns.eventId), eq(eventCardDesigns.userId, loggedUser.userId)))
+			.where(and(inArray(events.categoryId, categoryIds), eq(events.isActive, true), gte(events.eventDate, new Date())))
+			.orderBy(asc(events.eventDate));
 
-		return favouriteEvents;
+		return favouriteEvents.map(({ event, cardDesign }) => ({
+			...event,
+			cardDesign: cardDesign?.background
+				? {
+						background: cardDesign.background,
+						stickers: cardDesign.stickers,
+					}
+				: null,
+		}));
 	});
 }
