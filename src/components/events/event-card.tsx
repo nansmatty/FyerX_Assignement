@@ -1,15 +1,5 @@
+import { EventItem } from '@/types/event';
 import Link from 'next/link';
-
-export type EventItem = {
-	id: string;
-	title: string;
-	description: string | null;
-	eventDate: string;
-	city: string;
-	price: number | string;
-	categoryId: string;
-	isActive: boolean;
-};
 
 export default function EventCard({ event }: { event: EventItem }) {
 	return (

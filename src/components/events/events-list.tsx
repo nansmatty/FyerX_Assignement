@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import EventCard, { EventItem } from './event-card';
+import EventCard from './event-card';
 import EventFilters from './event-filters';
+import { EventItem } from '@/types/event';
 
 type EventWithCategory = EventItem & {
 	categoryId: string;
