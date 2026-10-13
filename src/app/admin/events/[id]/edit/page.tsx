@@ -15,7 +15,7 @@ export default function EditEventPage() {
 	useEffect(() => {
 		async function loadEvent() {
 			try {
-				const response = await fetch(`/api/events/${id}`);
+				const response = await fetch(`/api/admin/events/${id}`);
 
 				if (!response.ok) {
 					throw new Error('Failed to fetch event');
