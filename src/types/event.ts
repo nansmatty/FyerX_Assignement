@@ -7,4 +7,6 @@ export type EventItem = {
 	price: number | string;
 	categoryId: string;
 	isActive: boolean;
+	venue: string;
+	imageUrl: string | null;
 };
