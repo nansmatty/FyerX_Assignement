@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const links = [
 	{ name: 'Home', href: '/' },
@@ -11,6 +13,29 @@ const links = [
 
 export default function Navbar() {
 	const pathname = usePathname();
+	const router = useRouter();
+
+	const [user, setUser] = useState<{
+		authenticated: boolean;
+		role: string | null;
+	} | null>(null);
+
+	useEffect(() => {
+		async function checkAuth() {
+			try {
+				const response = await fetch('/api/auth/me', {
+					cache: 'no-store',
+				});
+
+				if (!response.ok) throw new Error('Auth check failed');
+
+				setUser(await response.json());
+			} catch {
+				setUser({ authenticated: false, role: null });
+			}
+		}
+		checkAuth();
+	}, [pathname]);
 
 	return (
 		<header className='border-b border-slate-200 bg-white'>
@@ -29,9 +54,36 @@ export default function Navbar() {
 						</Link>
 					))}
 
-					<Link href='/login' className='rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700'>
-						Login
-					</Link>
+					{user === null ? null : user.authenticated ? (
+						<>
+							{user.role === 'admin' && (
+								<Link href='/admin' className='text-sm font-medium text-indigo-600'>
+									Admin
+								</Link>
+							)}
+
+							<button
+								type='button'
+								onClick={async () => {
+									const response = await fetch('/api/auth/logout', {
+										method: 'POST',
+									});
+
+									if (response.ok) {
+										setUser({ authenticated: false, role: null });
+										router.push('/');
+										router.refresh();
+									}
+								}}
+								className='rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white'>
+								Logout
+							</button>
+						</>
+					) : (
+						<Link href='/login' className='rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white'>
+							Login
+						</Link>
+					)}
 				</div>
 			</nav>
 		</header>
