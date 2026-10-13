@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EventCard, { EventItem } from './event-card';
 import EventFilters from './event-filters';
 
@@ -8,12 +8,42 @@ type EventWithCategory = EventItem & {
 	categoryId: string;
 };
 
-export default function EventsList({ events }: { events: EventWithCategory[] }) {
+type Category = {
+	id: string;
+	name: string;
+};
+
+export default function EventsList() {
+	const [events, setEvents] = useState<EventWithCategory[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
 	const [search, setSearch] = useState('');
 	const [category, setCategory] = useState('');
 	const [city, setCity] = useState('');
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState('');
 
-	const categories = [...new Set(events.map((event) => event.categoryId))];
+	useEffect(() => {
+		async function loadData() {
+			try {
+				const [eventsRes, categoriesRes] = await Promise.all([fetch('/api/events'), fetch('/api/categories')]);
+
+				if (!eventsRes.ok || !categoriesRes.ok) {
+					throw new Error('Failed to load events or categories');
+				}
+
+				const [eventsData, categoriesData] = await Promise.all([eventsRes.json(), categoriesRes.json()]);
+
+				setEvents(eventsData.data);
+				setCategories(categoriesData.data);
+			} catch (err) {
+				setError(err instanceof Error ? err.message : 'Something went wrong');
+			} finally {
+				setLoading(false);
+			}
+		}
+		loadData();
+	}, []);
+
 	const cities = [...new Set(events.map((event) => event.city))];
 
 	const filteredEvents = useMemo(() => {
@@ -26,6 +56,9 @@ export default function EventsList({ events }: { events: EventWithCategory[] }) 
 			return matchesSearch && matchesCategory && matchesCity;
 		});
 	}, [events, search, category, city]);
+
+	if (loading) return <p>Loading events...</p>;
+	if (error) return <p className='text-error-600'>{error}</p>;
 
 	return (
 		<>
