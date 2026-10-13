@@ -20,6 +20,20 @@ export default function Navbar() {
 		role: string | null;
 	} | null>(null);
 
+	function handleLogout() {
+		const router = useRouter();
+		return async () => {
+			const response = await fetch('/api/auth/logout', {
+				method: 'POST',
+			});
+
+			if (response.ok) {
+				router.push('/');
+				router.refresh();
+			}
+		};
+	}
+
 	useEffect(() => {
 		async function checkAuth() {
 			try {
@@ -45,42 +59,28 @@ export default function Navbar() {
 				</Link>
 
 				<div className='flex flex-wrap items-center gap-5'>
-					{links.map((link) => (
-						<Link
-							key={link.href}
-							href={link.href}
-							className={`text-sm font-medium transition ${pathname === link.href ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>
-							{link.name}
-						</Link>
-					))}
-
-					{user === null ? null : user.authenticated ? (
+					{user?.authenticated && (
 						<>
+							{links.map((link) => (
+								<Link key={link.href} href={link.href} className='text-sm font-medium text-slate-600 hover:text-indigo-600'>
+									{link.name}
+								</Link>
+							))}
+
 							{user.role === 'admin' && (
-								<Link href='/admin' className='text-sm font-medium text-indigo-600'>
+								<Link href='/admin' className='text-sm font-medium'>
 									Admin
 								</Link>
 							)}
-
-							<button
-								type='button'
-								onClick={async () => {
-									const response = await fetch('/api/auth/logout', {
-										method: 'POST',
-									});
-
-									if (response.ok) {
-										setUser({ authenticated: false, role: null });
-										router.push('/');
-										router.refresh();
-									}
-								}}
-								className='rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white'>
-								Logout
-							</button>
 						</>
+					)}
+
+					{user === null ? null : user.authenticated ? (
+						<button type='button' onClick={handleLogout} className='rounded-lg bg-indigo-600 px-4 py-2 text-white'>
+							Logout
+						</button>
 					) : (
-						<Link href='/login' className='rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white'>
+						<Link href='/login' className='rounded-lg bg-indigo-600 px-4 py-2 text-white'>
 							Login
 						</Link>
 					)}
