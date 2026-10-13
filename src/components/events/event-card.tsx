@@ -7,6 +7,8 @@ export type EventItem = {
 	eventDate: string;
 	city: string;
 	price: number | string;
+	categoryId: string;
+	isActive: boolean;
 };
 
 export default function EventCard({ event }: { event: EventItem }) {
