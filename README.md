@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FyerX Community Events Board
 
-## Getting Started
+A community events platform for discovering upcoming events, managing event listings as an admin, saving reminders, and personalizing a user feed based on category interests.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 16 (App Router) and React 19
+- TypeScript
+- PostgreSQL with Drizzle ORM and the `postgres` driver
+- Zod for request validation
+- JWT auth with `jsonwebtoken`
+- Password hashing with `bcryptjs`
+- Tailwind CSS 4
+- Shared UI primitives in `src/components/ui` use `radix-ui`, `class-variance-authority`, and `cn`
+
+## Features
+
+- Admin event creation and editing
+- Public event discovery for upcoming active events
+- Search, category filtering, city filtering, and client-side pagination
+- JWT-based sign-in, sign-up, logout, and auth status checks
+- Category preference management
+- Personalized event feed based on saved categories
+- Reminder toggling for upcoming events
+- Event card customization with preset backgrounds and stickers
+
+## Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Create a `.env` file with these variables:
+   - `DATABASE_URL`
+   - `JWT_SECRET`
+   - `SEED_ADMIN_EMAIL` (required only for seeding)
+   - `SEED_ADMIN_PASSWORD` (required only for seeding)
+
+3. Apply database migrations:
+   ```bash
+   npm run db:migrate
+   ```
+
+   If you change the schema later, generate a new migration first:
+   ```bash
+   npm run db:generate
+   npm run db:migrate
+   ```
+
+4. Optional seed data:
+   ```bash
+   npm run db:seed
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Database Architecture
+
+- `users`: application accounts with an `ADMIN` or `USER` role.
+- `categories`: master list of event categories.
+- `events`: event records linked to `categories.id` and `users.id` via `category_id` and `created_by`.
+- `user_favourites`: many-to-many join table between users and preferred categories.
+- `event_reminders`: many-to-many join table between users and saved events.
+- `event_card_designs`: one customization row per user/event pair with a background and sticker list.
+
+Notable constraints:
+- `users.email` and `categories.name` are unique.
+- `events.price` is constrained to be non-negative.
+- `event_card_designs` enforces one design per user/event pair.
+
+## API Documentation
+
+Most endpoints use the shared `apiHandler`, which returns JSON in the shape `{ success, data }` on success and `{ success, error }` on failure.
+
+| Method | Endpoint | Purpose | Auth |
+|---|---|---|---|
+| POST | `/api/auth/signup` | Create a user account | None |
+| POST | `/api/auth/signin` | Sign in a regular user and set the auth cookie | None |
+| GET | `/api/auth/me` | Check whether the current cookie is authenticated | None |
+| POST | `/api/auth/logout` | Clear the auth cookie | Uses current cookie |
+| POST | `/api/admin/login` | Sign in an admin and set the auth cookie | None |
+| GET | `/api/categories` | List categories for filters and preferences | None |
+| GET | `/api/events` | List upcoming active events | None |
+| GET | `/api/events/[id]` | Read a single upcoming active event | None |
+| PUT | `/api/events/[id]/reminder` | Toggle a reminder for the signed-in user | Authenticated user |
+| GET | `/api/events/[id]/card-design` | Read the current user’s card design for an event | Authenticated user |
+| PUT | `/api/events/[id]/card-design` | Save the current user’s card design for an event | Authenticated user |
+| GET | `/api/me/preferences` | Read saved category preferences | Authenticated user |
+| PUT | `/api/me/preferences` | Replace saved category preferences | Authenticated user |
+| GET | `/api/me/feed` | Return upcoming active events matching saved categories | Authenticated user |
+| GET | `/api/me/reminders` | Return upcoming active events with reminders enabled | Authenticated user |
+| GET | `/api/admin/events` | List all events for the admin dashboard | Admin only |
+| POST | `/api/admin/events` | Create an event | Admin only |
+| GET | `/api/admin/events/[id]` | Read a single event for editing | Admin only |
+| PATCH | `/api/admin/events/[id]` | Update an event | Admin only |
+
+## Project Structure
+
+```text
+.
+├── drizzle/
+├── drizzle.config.ts
+├── package.json
+└── src/
+    ├── app/
+    │   ├── api/
+    │   └── (protected)/
+    ├── components/
+    │   ├── admin/
+    │   ├── auth/
+    │   ├── events/
+    │   └── preferences/
+    ├── db/
+    │   └── schemas/
+    ├── lib/
+    │   ├── utils/
+    │   └── validations/
+    └── types/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Design Decisions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Route groups under `src/app/(protected)` enforce authentication at the layout level for user and admin pages.
+- JWTs are stored in an `httpOnly` cookie and verified server-side through `verifyToken`; admin-only routes use `requireAdmin`.
+- `apiHandler` and `ApiError` keep API responses consistent and predictable.
+- The public events view loads active upcoming events once, then applies search, filters, and pagination on the client.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Known Limitations
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Search, filtering, and pagination are client-side only; the public events API does not accept query parameters.
+- Admin event management currently supports create and edit only. There is no delete endpoint or delete UI.
+- Card customization is limited to three preset backgrounds and up to three stickers from a fixed sticker set.
