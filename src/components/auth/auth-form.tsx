@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 
 const AuthForm = () => {
 	const router = useRouter();
-	const [isSignup, setIsSignup] = useState(true);
+	const [isSignup, setIsSignup] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
