@@ -11,6 +11,8 @@ export default function EventPage() {
 	const [event, setEvent] = useState<EventItem | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
+	const [reminderEnabled, setReminderEnabled] = useState(false);
+	const [reminderLoading, setReminderLoading] = useState(false);
 
 	useEffect(() => {
 		async function fetchEvent() {
@@ -31,6 +33,27 @@ export default function EventPage() {
 		}
 		fetchEvent();
 	}, [params.id]);
+
+	async function handleToggleReminder() {
+		try {
+			setReminderLoading(true);
+			const response = await fetch(`/api/events/${params.id}/reminder`, {
+				method: 'PUT',
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to set reminder');
+			}
+
+			const { data } = await response.json();
+
+			setReminderEnabled(data.reminderEnabled);
+		} catch (error) {
+			setError(error instanceof Error ? error.message : 'Something went wrong');
+		} finally {
+			setReminderLoading(false);
+		}
+	}
 
 	if (loading) {
 		return <div className='mx-auto max-w-5xl p-10 text-center text-slate-500'>Loading event details...</div>;
@@ -93,8 +116,12 @@ export default function EventPage() {
 							</div>
 
 							<div className='mt-7 space-y-3'>
-								<button type='button' className='w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700'>
-									🔔 Set Reminder
+								<button
+									type='button'
+									onClick={handleToggleReminder}
+									disabled={reminderLoading}
+									className='w-full rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white transition hover:bg-indigo-700'>
+									{reminderLoading ? 'Updating...' : reminderEnabled ? '🔕 Remove Reminder' : '🔔 Set Reminder'}
 								</button>
 
 								<Link
