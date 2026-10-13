@@ -7,6 +7,26 @@ import { db } from '@/db';
 import { events } from '@/db/schemas';
 import { eq } from 'drizzle-orm';
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+	return apiHandler(async () => {
+		await requireAdmin();
+		const { id } = await params;
+		const idValidation = eventIdValidation.safeParse(id);
+
+		if (!idValidation.success) {
+			throw new ApiError(400, 'Invalid event ID');
+		}
+
+		const [event] = await db.select().from(events).where(eq(events.id, idValidation.data)).limit(1);
+
+		if (!event) {
+			throw new ApiError(404, 'Event not found');
+		}
+
+		return event;
+	});
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	return apiHandler(async () => {
 		await requireAdmin();
