@@ -20,19 +20,30 @@ export default function Navbar() {
 		role: string | null;
 	} | null>(null);
 
-	function handleLogout() {
-		const router = useRouter();
-		return async () => {
+	const [loggingOut, setLoggingOut] = useState(false);
+
+	const handleLogout = async () => {
+		try {
+			setLoggingOut(true);
+
 			const response = await fetch('/api/auth/logout', {
 				method: 'POST',
 			});
 
-			if (response.ok) {
-				router.push('/');
-				router.refresh();
+			if (!response.ok) {
+				throw new Error('Logout failed');
 			}
-		};
-	}
+
+			setUser({ authenticated: false, role: null });
+
+			router.replace('/');
+			router.refresh();
+		} catch (error) {
+			console.error('Logout error:', error);
+		} finally {
+			setLoggingOut(false);
+		}
+	};
 
 	useEffect(() => {
 		async function checkAuth() {
@@ -67,8 +78,8 @@ export default function Navbar() {
 								</Link>
 							))}
 
-							{user.role === 'admin' && (
-								<Link href='/admin' className='text-sm font-medium'>
+							{user.role === 'ADMIN' && (
+								<Link href='/admin' className='text-sm font-medium text-slate-600 hover:text-indigo-600'>
 									Admin
 								</Link>
 							)}
@@ -76,8 +87,12 @@ export default function Navbar() {
 					)}
 
 					{user === null ? null : user.authenticated ? (
-						<button type='button' onClick={handleLogout} className='rounded-lg bg-indigo-600 px-4 py-2 text-white'>
-							Logout
+						<button
+							type='button'
+							onClick={handleLogout}
+							disabled={loggingOut}
+							className='rounded-lg bg-indigo-600 px-4 py-2 cursor-pointer text-white'>
+							{loggingOut ? 'Logging out...' : 'Logout'}
 						</button>
 					) : (
 						<Link href='/login' className='rounded-lg bg-indigo-600 px-4 py-2 text-white'>
