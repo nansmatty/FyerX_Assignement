@@ -3,6 +3,7 @@ import { events, eventReminders } from '@/db/schemas';
 import { apiHandler } from '@/lib/api-handler';
 import { verifyToken } from '@/lib/utils/verifyToken';
 import { and, eq, gte } from 'drizzle-orm';
+import { ApiError } from '@/lib/errors/api-error';
 import { NextRequest } from 'next/server';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			.limit(1);
 
 		if (!event) {
-			throw new Error('Event not found or no longer available');
+			throw new ApiError(404, 'Event not found or no longer available');
 		}
 
 		// Check existing reminder
