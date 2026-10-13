@@ -6,6 +6,16 @@ import { requireAdmin } from '@/lib/utils/requireAdmin';
 import { createEventValidation } from '@/lib/validations/event.validation';
 import { NextRequest } from 'next/server';
 
+export async function GET(req: NextRequest) {
+	return apiHandler(async () => {
+		const admin = await requireAdmin();
+
+		const eventsList = await db.select().from(events);
+
+		return eventsList;
+	});
+}
+
 export async function POST(req: NextRequest) {
 	return apiHandler(async () => {
 		const admin = await requireAdmin();
