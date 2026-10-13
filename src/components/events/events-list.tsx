@@ -4,14 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import EventCard from './event-card';
 import EventFilters from './event-filters';
 import { EventItem } from '@/types/event';
+import { Category } from '@/types/category';
 
 type EventWithCategory = EventItem & {
 	categoryId: string;
-};
-
-type Category = {
-	id: string;
-	name: string;
 };
 
 export default function EventsList() {

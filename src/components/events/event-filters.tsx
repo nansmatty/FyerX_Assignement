@@ -1,9 +1,6 @@
 'use client';
 
-type Category = {
-	id: string;
-	name: string;
-};
+import { Category } from '@/types/category';
 
 type EventFiltersProps = {
 	search: string;
