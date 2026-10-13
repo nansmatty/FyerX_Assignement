@@ -18,6 +18,8 @@ export default function EventsList() {
 	const [city, setCity] = useState('');
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
+	const [currentPage, setCurrentPage] = useState(1);
+	const eventsPerPage = 6;
 
 	useEffect(() => {
 		async function loadData() {
@@ -41,6 +43,10 @@ export default function EventsList() {
 		loadData();
 	}, []);
 
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [search, category, city]);
+
 	const cities = [...new Set(events.map((event) => event.city))];
 
 	const filteredEvents = useMemo(() => {
@@ -53,6 +59,10 @@ export default function EventsList() {
 			return matchesSearch && matchesCategory && matchesCity;
 		});
 	}, [events, search, category, city]);
+
+	const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+
+	const paginatedEvents = filteredEvents.slice((currentPage - 1) * eventsPerPage, currentPage * eventsPerPage);
 
 	if (loading) return <p>Loading events...</p>;
 	if (error) return <p className='text-error-600'>{error}</p>;
@@ -75,11 +85,38 @@ export default function EventsList() {
 			{filteredEvents.length === 0 ? (
 				<p className='text-sm text-slate-500'>No events found</p>
 			) : (
-				<div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-					{filteredEvents.map((event) => (
-						<EventCard key={event.id} event={event} />
-					))}
-				</div>
+				<>
+					<div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+						{paginatedEvents.map((event) => (
+							<EventCard key={event.id} event={event} />
+						))}
+					</div>
+					<div>
+						{totalPages > 1 && (
+							<div className='mt-8 flex items-center justify-center gap-4'>
+								<button
+									type='button'
+									disabled={currentPage === 1}
+									onClick={() => setCurrentPage((page) => page - 1)}
+									className='rounded-lg border px-4 py-2 disabled:opacity-40'>
+									Previous
+								</button>
+
+								<span className='text-sm text-slate-600'>
+									Page {currentPage} of {totalPages}
+								</span>
+
+								<button
+									type='button'
+									disabled={currentPage === totalPages}
+									onClick={() => setCurrentPage((page) => page + 1)}
+									className='rounded-lg border px-4 py-2 disabled:opacity-40'>
+									Next
+								</button>
+							</div>
+						)}
+					</div>
+				</>
 			)}
 		</>
 	);
