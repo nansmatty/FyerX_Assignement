@@ -1,10 +1,15 @@
 'use client';
 
+type Category = {
+	id: string;
+	name: string;
+};
+
 type EventFiltersProps = {
 	search: string;
 	category: string;
 	city: string;
-	categories: string[];
+	categories: Category[];
 	cities: string[];
 	onSearchChange: (search: string) => void;
 	onCategoryChange: (category: string) => void;
@@ -33,8 +38,8 @@ export default function EventFilters({
 			<select value={category} onChange={(e) => onCategoryChange(e.target.value)} className='rounded-lg border border-slate-300 p-3'>
 				<option value=''>All Categories</option>
 				{categories.map((item) => (
-					<option key={item} value={item}>
-						{item}
+					<option key={item.id} value={item.id}>
+						{item.name}
 					</option>
 				))}
 			</select>
